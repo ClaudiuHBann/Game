@@ -22,6 +22,21 @@
     <ClCompile Include="Utility\Random.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Mixer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Text.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Texture.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Window.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\Miscellaneous.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -32,6 +47,21 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="Utility\Random.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Mixer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Text.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Texture.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Window.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\Miscellaneous.h">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>

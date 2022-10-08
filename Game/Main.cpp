@@ -1,14 +1,38 @@
 #include "pch.h"
-#include "Utility/Logger.h"
+#include "Core/Window.h"
 
-int main() {
-#ifdef _DEBUG
-	Logger logger;
-#else
-	Logger logger("C:\\Users\\Claudiu HBann\\Desktop\\Logger.log");
-#endif // _DEBUG
+#define WINDOW_WIDTH_START (640)
+#define WINDOW_HEIGHT_START (480)
 
-	logger.Log("Start", Logger::Type::INFO);
+#define WINDOW_FLAGS (SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL)
+#define RENDERER_FLAGS (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)
 
-	return 0;
+int main(int /*argc*/, char** /*argv*/) {
+	Window window(
+		"Test",
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		WINDOW_WIDTH_START, WINDOW_HEIGHT_START,
+		WINDOW_FLAGS, RENDERER_FLAGS
+	);
+
+	bool isRunning = true;
+	SDL_Event event {};
+
+	while (isRunning) {
+		while (SDL_PollEvent(&event)) {
+			switch (event.type) {
+				case SDL_QUIT:
+					isRunning = false;
+					break;
+			}
+		}
+
+		SDL_RenderClear(window.GetRenderer());
+		SDL_SetRenderDrawColor(window.GetRenderer(), 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+		SDL_RenderPresent(window.GetRenderer());
+		SDL_SetRenderDrawColor(window.GetRenderer(), 0, 0, 0, SDL_ALPHA_OPAQUE);
+	}
+
+	return EXIT_SUCCESS;
 }

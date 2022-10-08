@@ -147,12 +147,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Mixer.h" />
+    <ClInclude Include="Core\Text.h" />
+    <ClInclude Include="Core\Texture.h" />
+    <ClInclude Include="Core\Window.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Utility\Logger.h" />
     <ClInclude Include="Utility\ManagerFile.h" />
+    <ClInclude Include="Utility\Miscellaneous.h" />
     <ClInclude Include="Utility\Random.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Mixer.cpp" />
+    <ClCompile Include="Core\Text.cpp" />
+    <ClCompile Include="Core\Texture.cpp" />
+    <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -161,6 +170,7 @@
     </ClCompile>
     <ClCompile Include="Utility\Logger.cpp" />
     <ClCompile Include="Utility\ManagerFile.cpp" />
+    <ClCompile Include="Utility\Miscellaneous.cpp" />
     <ClCompile Include="Utility\Random.cpp" />
   </ItemGroup>
   <ItemGroup>
