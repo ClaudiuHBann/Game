@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Core/Window.h"
+#include "Core/ManagerTexture.h"
 
 #define WINDOW_WIDTH_START (640)
 #define WINDOW_HEIGHT_START (480)
@@ -18,6 +19,9 @@ int main(int /*argc*/, char** /*argv*/) {
 	bool isRunning = true;
 	SDL_Event event {};
 
+	ManagerTexture managerTexture;
+	SDL_Texture* textureWall = managerTexture.Load(window.GetRenderer(), "wall.png");
+
 	while (isRunning) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
@@ -29,6 +33,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
 		SDL_RenderClear(window.GetRenderer());
 		SDL_SetRenderDrawColor(window.GetRenderer(), 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+		managerTexture.Render(window.GetRenderer(), textureWall, { 0, 0 });
 
 		SDL_RenderPresent(window.GetRenderer());
 		SDL_SetRenderDrawColor(window.GetRenderer(), 0, 0, 0, SDL_ALPHA_OPAQUE);

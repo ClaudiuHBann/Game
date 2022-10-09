@@ -10,12 +10,15 @@
     <Filter Include="Networking">
       <UniqueIdentifier>{5ffe7923-6eb6-4d6b-b9ec-58bdc5a90e2b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Managers">
+      <UniqueIdentifier>{ab9e545f-bd84-4b3f-b297-05c947604acb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Managers">
+      <UniqueIdentifier>{5824853d-c66f-429e-9463-5f30d6abe896}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Utility\ManagerFile.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="Utility\Logger.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -28,22 +31,22 @@
     <ClCompile Include="Core\Text.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Texture.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\Window.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Utility\Miscellaneous.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Core\ManagerTexture.cpp">
+      <Filter>Core\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\ManagerFile.cpp">
+      <Filter>Utility\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Utility\Logger.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\ManagerFile.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="Utility\Random.h">
@@ -55,14 +58,17 @@
     <ClInclude Include="Core\Text.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Texture.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Window.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Utility\Miscellaneous.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ManagerTexture.h">
+      <Filter>Core\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\ManagerFile.h">
+      <Filter>Utility\Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

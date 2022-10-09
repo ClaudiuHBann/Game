@@ -149,7 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Core\Mixer.h" />
     <ClInclude Include="Core\Text.h" />
-    <ClInclude Include="Core\Texture.h" />
+    <ClInclude Include="Core\ManagerTexture.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Utility\Logger.h" />
@@ -160,7 +160,7 @@
   <ItemGroup>
     <ClCompile Include="Core\Mixer.cpp" />
     <ClCompile Include="Core\Text.cpp" />
-    <ClCompile Include="Core\Texture.cpp" />
+    <ClCompile Include="Core\ManagerTexture.cpp" />
     <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

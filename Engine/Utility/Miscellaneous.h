@@ -20,5 +20,5 @@ if((pred)) { \
 	LOG(message, type); \
 	return x; \
 }
-#define LOG_AND_RETURN_IF_PARAM_IS_NULL(param, x) LOG_AND_RETURN_IF(param, GET_PARAMETER(param) + " is null!", LOG_TYPE_WARNING, x)
+#define LOG_AND_RETURN_IF_PARAM_IS_NULL(param, x) LOG_AND_RETURN_IF(!param, GET_PARAMETER(param) + " is null!", LOG_TYPE_WARNING, x)
 #define LOG_AND_RETURN_IF_NOT_INIT(pred, subsystems, x) LOG_AND_RETURN_IF(!pred, "The subsystem(s) \"" + string(subsystems) + "\" is(are) not initialized!", LOG_TYPE_ERROR, x)
