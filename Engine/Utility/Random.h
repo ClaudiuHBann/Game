@@ -8,7 +8,7 @@ public:
 	inline Integer GetInteger(
 		const Integer min = numeric_limits<Integer>::min(),
 		const Integer max = numeric_limits<Integer>::max()
-	) const {
+	) {
 		return uniform_int_distribution(min, max)(mEngine);
 	}
 
@@ -16,7 +16,7 @@ public:
 	inline Real GetReal(
 		const Real min = numeric_limits<Real>::min(),
 		const Real max = numeric_limits<Real>::max()
-	) const {
+	) {
 		return uniform_real_distribution(min, max)(mEngine);
 	}
 

@@ -9,6 +9,7 @@
 #include <random>
 #include <vector>
 #include <string>
+#include <list>
 #include <map>
 
 // ATL IO
