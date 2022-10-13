@@ -154,56 +154,86 @@ private:
 	NodeTreeBinary<T>* mRight = nullptr;
 };
 
+inline float RandomFloat(const float min, const float max) {
+	static Random random {};
+	return floor(random.GetReal(0.f, 1.f) * (max - min + 1.f) + min);
+}
+
 class Room {
 public:
-	inline Room() = default;
-
-	inline Room(const Rectangle<float>& rectangle) {
+	inline Room(const Rectangle<float>& rectangle, const Point<float> scale = { 1.f, 1.f }) {
 		mRectangle.SetX(rectangle.GetX() + RandomFloat(0.f, floor(rectangle.GetW() / 3.f)));
 		mRectangle.SetY(rectangle.GetY() + RandomFloat(0.f, floor(rectangle.GetH() / 3.f)));
 		mRectangle.SetW(rectangle.GetW() - (mRectangle.GetX() - rectangle.GetX()));
 		mRectangle.SetH(rectangle.GetH() - (mRectangle.GetY() - rectangle.GetY()));
 		mRectangle.SetW(mRectangle.GetW() - RandomFloat(0.f, mRectangle.GetW() / 3.f));
 		mRectangle.SetH(mRectangle.GetH() - RandomFloat(0.f, mRectangle.GetH() / 3.f));
+
+		mRectangle.SetW(mRectangle.GetW() * scale.GetX());
+		mRectangle.SetH(mRectangle.GetH() * scale.GetY());
 	}
 
-	inline void Render(SDL_Renderer* renderer, const float scale) const {
-		SDL_FRect frect { mRectangle.GetX() * scale, mRectangle.GetY() * scale,
-						  mRectangle.GetW() * scale, mRectangle.GetH() * scale };
-		SDL_RenderFillRectF(renderer, &frect);
-	}
-
-protected:
-	inline float RandomFloat(const float min, const float max) const {
-		static Random random {};
-		return floor(random.GetReal(0.f, 1.f) * (max - min + 1.f) + min);
+	inline const Rectangle<float>& GetRectangle() const {
+		return mRectangle;
 	}
 
 private:
 	Rectangle<float> mRectangle {};
 };
 
-class Dungeon : public Room {
+class Path {
 public:
-	inline Dungeon(const size_t iterations = 4Ui64,
-				   const Point<float>& size = { (float)WINDOW_WIDTH_START, (float)WINDOW_HEIGHT_START },
-				   const float scale = 1.f,
-				   const Point<float>& ratioToDiscard = { 0.45f, 0.45f })
+	inline Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, const float width = 1.f) {
+		const auto centerRO = rectOne.GetCenter();
+		const auto centerRT = rectTwo.GetCenter();
+		const auto centerDistance = centerRO.Distance(centerRT);
+		const auto widthHalf = width / 2.f;
+
+		if (centerRO.GetY() == centerRT.GetY()) {
+			const auto centerLower = min(centerRO.GetX(), centerRT.GetX());
+
+			mRectangle = Rectangle<float>(centerLower, centerRO.GetY() - widthHalf, centerDistance, width);
+		} else {
+			const auto centerLower = min(centerRO.GetY(), centerRT.GetY());
+
+			mRectangle = Rectangle<float>(centerRO.GetX() - widthHalf, centerLower, width, centerDistance);
+		}
+	}
+
+	inline const Rectangle<float>& GetRectangle() const {
+		return mRectangle;
+	}
+
+private:
+	Rectangle<float> mRectangle {};
+};
+
+class Dungeon {
+public:
+	inline Dungeon(
+		const size_t iterations,
+		const Point<float>& size,
+		const Point<float>& scaleRoom = { 1.f, 1.f },
+		const float scalePath = 1.f,
+		const Point<float>& ratioToDiscard = { 0.45f, 0.45f }
+	)
 		: mRectangle(0.f, 0.f, size.GetX(), size.GetY()),
-		mScale(scale),
 		mRatioToDiscard(ratioToDiscard),
-		mTree(SplitRectangle(mRectangle, iterations)) {}
-
-	void Render(SDL_Renderer* renderer) const {
-		//RenderTree(renderer, mTree);
-
-		RenderPaths(renderer, mTree);
+		mTree(SplitRectangle(mRectangle, iterations, scaleRoom)) {
 
 		list<NodeTreeBinary<Rectangle<float>>> leafs;
 		mTree->GetLeafs(leafs);
 		for (const auto& leaf : leafs) {
-			Room(leaf.GetLeaf()).Render(renderer, mScale);
+			mRooms.push_back(leaf.GetLeaf());
 		}
+
+		GeneratePaths(mTree, mPaths, scalePath);
+	}
+
+	inline void Render(SDL_Renderer* renderer) const {
+		RenderTree(renderer, mTree);
+		RenderPaths(renderer);
+		RenderRooms(renderer);
 	}
 
 	inline ~Dungeon() {
@@ -212,27 +242,33 @@ public:
 	}
 
 private:
-	inline void RenderPath(SDL_Renderer* renderer, const Rectangle<float>& rectangleOne, const Rectangle<float>& rectangleTwo) const {
-		SDL_RenderSetScale(renderer, mScale, mScale);
-		SDL_RenderDrawLineF(renderer, rectangleTwo.GetCenter().GetX() * mScale, rectangleTwo.GetCenter().GetY() * mScale,
-							rectangleOne.GetCenter().GetX() * mScale, rectangleOne.GetCenter().GetY() * mScale);
-		SDL_RenderSetScale(renderer, 1.f, 1.f);
+	inline void RenderRoom(SDL_Renderer* renderer, const Room& room) const {
+		const SDL_FRect frect { room.GetRectangle().GetX(), room.GetRectangle().GetY(),
+								room.GetRectangle().GetW(), room.GetRectangle().GetH() };
+		SDL_RenderFillRectF(renderer, &frect);
 	}
 
-	inline void RenderPaths(SDL_Renderer* renderer, NodeTreeBinary<Rectangle<float>>* const tree) const {
-		if (!tree->GetLeft() || !tree->GetRight()) {
-			return;
+	void RenderRooms(SDL_Renderer* renderer) const {
+		for (const auto& room : mRooms) {
+			RenderRoom(renderer, room);
 		}
+	}
 
-		RenderPath(renderer, tree->GetLeft()->GetLeaf(), tree->GetRight()->GetLeaf());
+	inline void RenderPath(SDL_Renderer* renderer, const Path& path) const {
+		const SDL_FRect frect { path.GetRectangle().GetX(), path.GetRectangle().GetY(),
+								path.GetRectangle().GetW(), path.GetRectangle().GetH() };
+		SDL_RenderFillRectF(renderer, &frect);
+	}
 
-		RenderPaths(renderer, tree->GetLeft());
-		RenderPaths(renderer, tree->GetRight());
+	void RenderPaths(SDL_Renderer* renderer) const {
+		for (const auto& path : mPaths) {
+			RenderPath(renderer, path);
+		}
 	}
 
 	inline void RenderRectangle(SDL_Renderer* renderer, const Rectangle<float>& rectangle) const {
-		SDL_FRect frect { rectangle.GetX() * mScale, rectangle.GetY() * mScale,
-						  rectangle.GetW() * mScale, rectangle.GetH() * mScale };
+		const SDL_FRect frect { rectangle.GetX(), rectangle.GetY(),
+								rectangle.GetW(), rectangle.GetH() };
 		SDL_RenderDrawRectF(renderer, &frect);
 	}
 
@@ -248,7 +284,7 @@ private:
 		}
 	}
 
-	inline pair<Rectangle<float>, Rectangle<float>> SplitRandom(const Rectangle<float>& rectangle) const {
+	inline pair<Rectangle<float>, Rectangle<float>> SplitRandom(const Rectangle<float>& rectangle, const Point<float>& scale) const {
 		Rectangle<float> rectOne, rectTwo;
 
 		if (RandomFloat(0.f, 1.f)) {
@@ -263,7 +299,7 @@ private:
 
 				if (rectOneRatioW < mRatioToDiscard.GetX() ||
 					rectTwoRatioW < mRatioToDiscard.GetX()) {
-					return SplitRandom(rectangle);
+					return SplitRandom(rectangle, scale);
 				}
 			}
 		} else {
@@ -278,24 +314,41 @@ private:
 
 				if (rectOneRatioH < mRatioToDiscard.GetY() ||
 					rectTwoRatioH < mRatioToDiscard.GetY()) {
-					return SplitRandom(rectangle);
+					return SplitRandom(rectangle, scale);
 				}
 			}
 		}
 
+		rectOne.SetW(rectOne.GetW() * scale.GetX());
+		rectOne.SetH(rectOne.GetH() * scale.GetY());
+
+		rectTwo.SetW(rectTwo.GetW() * scale.GetX());
+		rectTwo.SetH(rectTwo.GetH() * scale.GetY());
+
 		return { rectOne, rectTwo };
 	}
 
-	inline NodeTreeBinary<Rectangle<float>>* SplitRectangle(const Rectangle<float>& container, const size_t iterations) const {
+	inline NodeTreeBinary<Rectangle<float>>* SplitRectangle(const Rectangle<float>& container, const size_t iterations, const Point<float>& scale) const {
 		NodeTreeBinary<Rectangle<float>>* root = new NodeTreeBinary<Rectangle<float>>(container);
 		if (iterations) {
-			const auto pair = SplitRandom(container);
+			const auto pair = SplitRandom(container, scale);
 
-			root->SetLeft(SplitRectangle(pair.first, iterations - 1));
-			root->SetRight(SplitRectangle(pair.second, iterations - 1));
+			root->SetLeft(SplitRectangle(pair.first, iterations - 1, scale));
+			root->SetRight(SplitRectangle(pair.second, iterations - 1, scale));
 		}
 
 		return root;
+	}
+
+	inline void GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths, const float width) {
+		if (!tree->GetLeft() || !tree->GetRight()) {
+			return;
+		}
+
+		paths.push_back(Path(tree->GetLeft()->GetLeaf(), tree->GetRight()->GetLeaf(), width));
+
+		GeneratePaths(tree->GetLeft(), paths, width);
+		GeneratePaths(tree->GetRight(), paths, width);
 	}
 
 	void DeleteTree(NodeTreeBinary<Rectangle<float>>* tree) {
@@ -310,18 +363,22 @@ private:
 	}
 
 	Rectangle<float> mRectangle {};
-	float mScale = 0.f;
 	Point<float> mRatioToDiscard {};
+
 	NodeTreeBinary<Rectangle<float>>* mTree = nullptr;
+	list<Room> mRooms {};
+	list<Path> mPaths {};
 };
 
 int main(int /*argc*/, char** /*argv*/) {
 	Window window(
-		"Test",
+		"BSP Dungeon Generation",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		WINDOW_WIDTH_START, WINDOW_HEIGHT_START,
 		WINDOW_FLAGS, RENDERER_FLAGS
 	);
+
+	Dungeon dungeon(4, { WINDOW_WIDTH_START, WINDOW_HEIGHT_START }, { 1.25f, 1.25f }, 5.f);
 
 	bool isRunning = true;
 	SDL_Event event {};
@@ -335,15 +392,13 @@ int main(int /*argc*/, char** /*argv*/) {
 			}
 		}
 
+		SDL_SetRenderDrawColor(window.GetRenderer(), 0, 0, 0, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(window.GetRenderer());
 		SDL_SetRenderDrawColor(window.GetRenderer(), 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-		Dungeon().Render(window.GetRenderer());
+		dungeon.Render(window.GetRenderer());
 
 		SDL_RenderPresent(window.GetRenderer());
-		SDL_SetRenderDrawColor(window.GetRenderer(), 0, 0, 0, SDL_ALPHA_OPAQUE);
-
-		//SDL_Delay(1234);
 	}
 
 	return EXIT_SUCCESS;
@@ -352,5 +407,5 @@ int main(int /*argc*/, char** /*argv*/) {
 /*
 	TO DO:
 			- make the alg iterative
-			- regroup things up a little more?
+			- check every shit
 */
