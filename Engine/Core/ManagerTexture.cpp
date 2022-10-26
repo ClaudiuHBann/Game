@@ -47,7 +47,7 @@ void ManagerTexture::Render(SDL_Renderer* renderer, SDL_Texture* texture, const 
     }
 }
 
-SDL_Texture* ManagerTexture::Load(SDL_Renderer* renderer, const std::string& path) {
+SDL_Texture* ManagerTexture::Load(SDL_Renderer* renderer, const string& path) {
     LOG_AND_RETURN_IF_NOT_INIT(mIsInitialized, mSubsystems, nullptr);
     LOG_AND_RETURN_IF_PARAM_IS_NULL(renderer, nullptr);
     if (!ManagerFile::Exists(path)) {

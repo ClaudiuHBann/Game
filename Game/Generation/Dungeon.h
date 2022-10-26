@@ -1,7 +1,6 @@
 #pragma once
 
-///
-#include "../Core/Types.h"
+#include "Game/Core/Types.h"
 
 class Room {
 public:

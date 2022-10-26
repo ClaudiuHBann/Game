@@ -1,8 +1,11 @@
 #pragma once
 
+#include <random>
+using namespace std;
+
 class Random {
 public:
-    Random() : mEngine(mGenerator()) {}
+    Random();
 
     template<typename Integer>
     Integer GetInteger(

@@ -10,7 +10,7 @@ public:
 
     static void Render(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Point& position, const SDL_FPoint& size = { 1.f, 1.f }, const SDL_Rect& textureRect = { -1, -1, -1, -1 });
 
-    SDL_Texture* Load(SDL_Renderer* renderer, const std::string& path);
+    SDL_Texture* Load(SDL_Renderer* renderer, const string& path);
 
     void Remove(SDL_Texture* texture);
 

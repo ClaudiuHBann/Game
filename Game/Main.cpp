@@ -49,7 +49,6 @@ int main(int /*argc*/, char** /*argv*/) {
     TO DO:
             - make the alg iterative
             - check every shit because OCD...
-            - solve the dependency problem
-            - add namespaces to keep the engine directory included
-            - what my inline is happening
+            - add namespaces to keep the popular naming everywhere
+            - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
 */
