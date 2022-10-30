@@ -13,12 +13,13 @@
 #define WINDOW_FLAGS (SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL)
 #define RENDERER_FLAGS (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)
 
-#define ZOOM_MIN 0.5f
-#define ZOOM_MAX 1.5f
+#define ZOOM_MIN (0.5f)
+#define ZOOM_MAX (1.5f)
+#define ZOOM_DIFF ((ZOOM_MAX) - (ZOOM_MIN))
 
 int main(int /*argc*/, char** /*argv*/) {
     Window window(
-        "BSP Dungeon Generation",
+        "Dangian",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH_START, WINDOW_HEIGHT_START,
         WINDOW_FLAGS, RENDERER_FLAGS
@@ -33,9 +34,10 @@ int main(int /*argc*/, char** /*argv*/) {
     SDL_Point mousePosOnButtonDown {};
     SDL_Point mousePosDiff {};
 
-    SDL_FPoint offsetMap {};
+    Point<float> offsetMapLast {};
+    Point<float> offsetMapCurrent {};
 
-    float zoomCurrent = 1.f;
+    float zoomCurrent = ZOOM_DIFF;
     float zoomScale = 0.05f;
 
     while (isRunning) {
@@ -46,8 +48,10 @@ int main(int /*argc*/, char** /*argv*/) {
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:
-                    isMouseButtonDown = true;
-                    SDL_GetMouseState(&mousePosOnButtonDown.x, &mousePosOnButtonDown.y);
+                    {
+                        isMouseButtonDown = true;
+                        SDL_GetMouseState(&mousePosOnButtonDown.x, &mousePosOnButtonDown.y);
+                    }
 
                     break;
 
@@ -56,20 +60,21 @@ int main(int /*argc*/, char** /*argv*/) {
                         SDL_Point mousePosCurrent {};
                         SDL_GetMouseState(&mousePosCurrent.x, &mousePosCurrent.y);
 
-                        mousePosDiff.x = -(mousePosOnButtonDown.x - mousePosCurrent.x);
-                        mousePosDiff.y = -(mousePosOnButtonDown.y - mousePosCurrent.y);
+                        mousePosDiff = { -(mousePosOnButtonDown.x - mousePosCurrent.x),
+                                         -(mousePosOnButtonDown.y - mousePosCurrent.y) };
+
+                        float zoomCurrentInverted = 1.f / zoomCurrent;
+                        offsetMapCurrent = { offsetMapLast.GetX() + mousePosDiff.x * zoomCurrentInverted,
+                                             offsetMapLast.GetY() + mousePosDiff.y * zoomCurrentInverted };
                     }
 
                     break;
 
                 case SDL_MOUSEBUTTONUP:
-                    isMouseButtonDown = false;
-
-                    offsetMap.x += mousePosDiff.x;
-                    offsetMap.y += mousePosDiff.y;
-
-                    mousePosOnButtonDown = {};
-                    mousePosDiff = {};
+                    {
+                        isMouseButtonDown = false;
+                        offsetMapLast = offsetMapCurrent;
+                    }
 
                     break;
 
@@ -79,8 +84,6 @@ int main(int /*argc*/, char** /*argv*/) {
                     } else if (event.wheel.y < 0 && zoomCurrent >= ZOOM_MIN) {
                         zoomCurrent -= zoomScale;
                     }
-
-                    break;
             }
         }
 
@@ -88,7 +91,11 @@ int main(int /*argc*/, char** /*argv*/) {
         SDL_RenderClear(window.GetRenderer());
         SDL_SetRenderDrawColor(window.GetRenderer(), 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-        dungeon.Render(window.GetRenderer(), { zoomCurrent, zoomCurrent }, 5.f);
+        dungeon.Render(
+            window.GetRenderer(),
+            { zoomCurrent, zoomCurrent }, 5.f,
+            offsetMapCurrent
+        );
 
         SDL_RenderPresent(window.GetRenderer());
     }
@@ -102,5 +109,5 @@ int main(int /*argc*/, char** /*argv*/) {
             - check every shit because OCD...
             - add namespaces to keep the popular naming everywhere
             - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
-            - center zoom on player
+            - center zoom on mouse cursor
 */

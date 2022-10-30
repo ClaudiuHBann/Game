@@ -60,8 +60,12 @@ const Rectangle<float>& Path::GetRectangle() const {
     return mRectangle;
 }
 
-Dungeon::Dungeon(const size_t iterations, const Point<float>& size, const Point<float>& ratioToDiscard /* = { 0.45f, 0.45f } */)
-    : mCanvas(0.f, 0.f, size.GetX(), size.GetY()),
+Dungeon::Dungeon(
+    const size_t iterations,
+    const Point<float>& size,
+    const Point<float>& ratioToDiscard /* = { 0.45f, 0.45f } */
+) :
+    mCanvas(0.f, 0.f, size.GetX(), size.GetY()),
     mRatioToDiscard(ratioToDiscard),
     mTree(SplitRectangle(mCanvas, iterations)) {
 
@@ -74,14 +78,21 @@ Dungeon::Dungeon(const size_t iterations, const Point<float>& size, const Point<
     GeneratePaths(mTree, mPaths);
 }
 
-void Dungeon::Render(SDL_Renderer* renderer, const Point<float>& scale /* = { 1.f, 1.f } */, const float scalePath /* = 1.f */) {
+void Dungeon::Render(
+    SDL_Renderer* renderer,
+    const Point<float>& scale /* = { 1.f, 1.f } */,
+    const float scalePath /* = 1.f */,
+    const Point<float>& offset /* = {} */
+) {
     SDL_FPoint scaleLast {};
     SDL_RenderGetScale(renderer, &scaleLast.x, &scaleLast.y);
 
     SDL_RenderSetScale(renderer, scale.GetX(), scale.GetY());
-    //RenderTree(renderer, mTree);
-    RenderPaths(renderer, scalePath);
-    RenderRooms(renderer);
+
+    //RenderTree(renderer, mTree, offset);
+    RenderPaths(renderer, scalePath, offset);
+    RenderRooms(renderer, offset);
+
     SDL_RenderSetScale(renderer, scaleLast.x, scaleLast.y);
 }
 
@@ -90,39 +101,65 @@ Dungeon::~Dungeon() {
     mTree = nullptr;
 }
 
-void Dungeon::RenderRoom(SDL_Renderer* renderer, const Room& room) const {
-    const SDL_FRect frect { room.GetRectangle().GetX(), room.GetRectangle().GetY(),
-        room.GetRectangle().GetW(), room.GetRectangle().GetH() };
+void Dungeon::RenderRoom(
+    SDL_Renderer* renderer,
+    const Room& room,
+    const Point<float>& offset /* = {} */
+) const {
+    SDL_FRect frect { room.GetRectangle().GetX(), room.GetRectangle().GetY(),
+                      room.GetRectangle().GetW(), room.GetRectangle().GetH() };
+    AddOffset(frect, offset);
+
     SDL_RenderFillRectF(renderer, &frect);
 }
 
-void Dungeon::RenderRooms(SDL_Renderer* renderer) const {
+void Dungeon::RenderRooms(SDL_Renderer* renderer, const Point<float>& offset /* = {} */) const {
     for (const auto& room : mRooms) {
-        RenderRoom(renderer, room);
+        RenderRoom(renderer, room, offset);
     }
 }
 
-void Dungeon::RenderPath(SDL_Renderer* renderer, const Path& path) const {
-    const SDL_FRect frect { path.GetRectangle().GetX(), path.GetRectangle().GetY(),
-        path.GetRectangle().GetW(), path.GetRectangle().GetH() };
+void Dungeon::RenderPath(
+    SDL_Renderer* renderer,
+    const Path& path,
+    const Point<float>& offset /* = {} */
+) const {
+    SDL_FRect frect { path.GetRectangle().GetX(), path.GetRectangle().GetY(),
+                      path.GetRectangle().GetW(), path.GetRectangle().GetH() };
+    AddOffset(frect, offset);
+
     SDL_RenderFillRectF(renderer, &frect);
 }
 
-void Dungeon::RenderPaths(SDL_Renderer* renderer, const float width /* = 1.f */) {
+void Dungeon::RenderPaths(
+    SDL_Renderer* renderer,
+    const float width /* = 1.f */,
+    const Point<float>& offset /* = {} */
+) {
     for (auto& path : mPaths) {
         path.SetWidth(width);
-        RenderPath(renderer, path);
+        RenderPath(renderer, path, offset);
     }
 }
 
-void Dungeon::RenderRectangle(SDL_Renderer* renderer, const Rectangle<float>& rectangle) const {
-    const SDL_FRect frect { rectangle.GetX(), rectangle.GetY(),
-        rectangle.GetW(), rectangle.GetH() };
+void Dungeon::RenderRectangle(
+    SDL_Renderer* renderer,
+    const Rectangle<float>& rectangle,
+    const Point<float>& offset /* = {} */
+) const {
+    SDL_FRect frect { rectangle.GetX(), rectangle.GetY(),
+                      rectangle.GetW(), rectangle.GetH() };
+    AddOffset(frect, offset);
+
     SDL_RenderDrawRectF(renderer, &frect);
 }
 
-void Dungeon::RenderTree(SDL_Renderer* renderer, NodeTreeBinary<Rectangle<float>>* const tree) const {
-    RenderRectangle(renderer, tree->GetLeaf());
+void Dungeon::RenderTree(
+    SDL_Renderer* renderer,
+    NodeTreeBinary<Rectangle<float>>* const tree,
+    const Point<float>& offset /* = {} */
+) const {
+    RenderRectangle(renderer, tree->GetLeaf(), offset);
 
     if (tree->GetLeft()) {
         RenderTree(renderer, tree->GetLeft());
@@ -203,4 +240,9 @@ void Dungeon::DeleteTree(NodeTreeBinary<Rectangle<float>>* tree) {
     DeleteTree(tree->GetRight());
 
     delete tree;
+}
+
+void Dungeon::AddOffset(SDL_FRect& rect, const Point<float>& offset) const {
+    rect.x += offset.GetX();
+    rect.y += offset.GetY();
 }

@@ -33,22 +33,47 @@ public:
         const Point<float>& ratioToDiscard = { 0.45f, 0.45f }
     );
 
-    void Render(SDL_Renderer* renderer, const Point<float>& scale = { 1.f, 1.f }, const float scalePath = 1.f);
+    void Render(
+        SDL_Renderer* renderer,
+        const Point<float>& scale = { 1.f, 1.f },
+        const float scalePath = 1.f,
+        const Point<float>& offset = {}
+    );
 
     ~Dungeon();
 
 private:
-    void RenderRoom(SDL_Renderer* renderer, const Room& room) const;
+    void RenderRoom(
+        SDL_Renderer* renderer,
+        const Room& room,
+        const Point<float>& offset = {}
+    ) const;
 
-    void RenderRooms(SDL_Renderer* renderer) const;
+    void RenderRooms(SDL_Renderer* renderer, const Point<float>& offset = {}) const;
 
-    void RenderPath(SDL_Renderer* renderer, const Path& path) const;
+    void RenderPath(
+        SDL_Renderer* renderer,
+        const Path& path,
+        const Point<float>& offset = {}
+    ) const;
 
-    void RenderPaths(SDL_Renderer* renderer, const float width /* = 1.f */);
+    void RenderPaths(
+        SDL_Renderer* renderer,
+        const float width = 1.f,
+        const Point<float>& offset = {}
+    );
 
-    void RenderRectangle(SDL_Renderer* renderer, const Rectangle<float>& rectangle) const;
+    void RenderRectangle(
+        SDL_Renderer* renderer,
+        const Rectangle<float>& rectangle,
+        const Point<float>& offset = {}
+    ) const;
 
-    void RenderTree(SDL_Renderer* renderer, NodeTreeBinary<Rectangle<float>>* const tree) const;
+    void RenderTree(
+        SDL_Renderer* renderer,
+        NodeTreeBinary<Rectangle<float>>* const tree,
+        const Point<float>& offset = {}
+    ) const;
 
     pair<Rectangle<float>, Rectangle<float>> SplitRandom(const Rectangle<float>& rectangle) const;
 
@@ -57,6 +82,8 @@ private:
     void GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths);
 
     void DeleteTree(NodeTreeBinary<Rectangle<float>>* tree);
+
+    void AddOffset(SDL_FRect& rect, const Point<float>& offset) const;
 
     Rectangle<float> mCanvas {};
     Point<float> mRatioToDiscard {};
