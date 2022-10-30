@@ -16,10 +16,13 @@ class Path {
 public:
     Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, const float width = 1.f);
 
+    void SetWidth(const float width);
+
     const Rectangle<float>& GetRectangle() const;
 
 private:
     Rectangle<float> mRectangle {};
+    float mWidth {};
 };
 
 class Dungeon {
@@ -27,12 +30,10 @@ public:
     Dungeon(
         const size_t iterations,
         const Point<float>& size,
-        const Point<float>& scale = { 1.f, 1.f },
-        const float scalePath = 1.f,
         const Point<float>& ratioToDiscard = { 0.45f, 0.45f }
     );
 
-    void Render(SDL_Renderer* renderer) const;
+    void Render(SDL_Renderer* renderer, const Point<float>& scale = { 1.f, 1.f }, const float scalePath = 1.f);
 
     ~Dungeon();
 
@@ -43,7 +44,7 @@ private:
 
     void RenderPath(SDL_Renderer* renderer, const Path& path) const;
 
-    void RenderPaths(SDL_Renderer* renderer) const;
+    void RenderPaths(SDL_Renderer* renderer, const float width /* = 1.f */);
 
     void RenderRectangle(SDL_Renderer* renderer, const Rectangle<float>& rectangle) const;
 
@@ -53,7 +54,7 @@ private:
 
     NodeTreeBinary<Rectangle<float>>* SplitRectangle(const Rectangle<float>& container, const size_t iterations) const;
 
-    void GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths, const float width);
+    void GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths);
 
     void DeleteTree(NodeTreeBinary<Rectangle<float>>* tree);
 
@@ -63,5 +64,4 @@ private:
     NodeTreeBinary<Rectangle<float>>* mTree = nullptr;
     list<Room> mRooms {};
     list<Path> mPaths {};
-    Point<float> mScale {};
 };

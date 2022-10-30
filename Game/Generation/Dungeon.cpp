@@ -19,7 +19,8 @@ const Rectangle<float>& Room::GetRectangle() const {
     return mRectangle;
 }
 
-Path::Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, const float width /* = 1.f */) {
+Path::Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, const float width /* = 1.f */)
+    : mWidth(width) {
     const auto centerRO = rectOne.GetCenter();
     const auto centerRT = rectTwo.GetCenter();
     const auto centerDistance = centerRO.Distance(centerRT);
@@ -36,13 +37,31 @@ Path::Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, con
     }
 }
 
+void Path::SetWidth(const float width) {
+    if (mWidth == width) {
+        return;
+    }
+
+    const auto widthHalfOld = mWidth / 2.f;
+    const auto widthHalfNew = width / 2.f;
+
+    if (mRectangle.GetW() == mWidth) {
+        mRectangle.SetY(mRectangle.GetY() - widthHalfOld + widthHalfNew);
+        mRectangle.SetW(width);
+    } else {
+        mRectangle.SetX(mRectangle.GetX() - widthHalfOld + widthHalfNew);
+        mRectangle.SetH(width);
+    }
+
+    mWidth = width;
+}
+
 const Rectangle<float>& Path::GetRectangle() const {
     return mRectangle;
 }
 
-Dungeon::Dungeon(const size_t iterations, const Point<float>& size, const Point<float>& scale /* = { 1.f, 1.f } */, const float scalePath /* = 1.f */, const Point<float>& ratioToDiscard /* = { 0.45f, 0.45f } */)
+Dungeon::Dungeon(const size_t iterations, const Point<float>& size, const Point<float>& ratioToDiscard /* = { 0.45f, 0.45f } */)
     : mCanvas(0.f, 0.f, size.GetX(), size.GetY()),
-    mScale(scale),
     mRatioToDiscard(ratioToDiscard),
     mTree(SplitRectangle(mCanvas, iterations)) {
 
@@ -52,16 +71,16 @@ Dungeon::Dungeon(const size_t iterations, const Point<float>& size, const Point<
         mRooms.push_back(leaf.GetLeaf());
     }
 
-    GeneratePaths(mTree, mPaths, scalePath);
+    GeneratePaths(mTree, mPaths);
 }
 
-void Dungeon::Render(SDL_Renderer* renderer) const {
+void Dungeon::Render(SDL_Renderer* renderer, const Point<float>& scale /* = { 1.f, 1.f } */, const float scalePath /* = 1.f */) {
     SDL_FPoint scaleLast {};
     SDL_RenderGetScale(renderer, &scaleLast.x, &scaleLast.y);
 
-    SDL_RenderSetScale(renderer, mScale.GetX(), mScale.GetY());
+    SDL_RenderSetScale(renderer, scale.GetX(), scale.GetY());
     //RenderTree(renderer, mTree);
-    RenderPaths(renderer);
+    RenderPaths(renderer, scalePath);
     RenderRooms(renderer);
     SDL_RenderSetScale(renderer, scaleLast.x, scaleLast.y);
 }
@@ -89,8 +108,9 @@ void Dungeon::RenderPath(SDL_Renderer* renderer, const Path& path) const {
     SDL_RenderFillRectF(renderer, &frect);
 }
 
-void Dungeon::RenderPaths(SDL_Renderer* renderer) const {
-    for (const auto& path : mPaths) {
+void Dungeon::RenderPaths(SDL_Renderer* renderer, const float width /* = 1.f */) {
+    for (auto& path : mPaths) {
+        path.SetWidth(width);
         RenderPath(renderer, path);
     }
 }
@@ -163,15 +183,15 @@ NodeTreeBinary<Rectangle<float>>* Dungeon::SplitRectangle(const Rectangle<float>
     return root;
 }
 
-void Dungeon::GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths, const float width) {
+void Dungeon::GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths) {
     if (!tree->GetLeft() || !tree->GetRight()) {
         return;
     }
 
-    paths.push_back(Path(tree->GetLeft()->GetLeaf(), tree->GetRight()->GetLeaf(), width));
+    paths.push_back(Path(tree->GetLeft()->GetLeaf(), tree->GetRight()->GetLeaf()));
 
-    GeneratePaths(tree->GetLeft(), paths, width);
-    GeneratePaths(tree->GetRight(), paths, width);
+    GeneratePaths(tree->GetLeft(), paths);
+    GeneratePaths(tree->GetRight(), paths);
 }
 
 void Dungeon::DeleteTree(NodeTreeBinary<Rectangle<float>>* tree) {
