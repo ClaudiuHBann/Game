@@ -56,14 +56,16 @@ public:
             stream << typePair.first << ' ';
         }
 
-        stream << data << mReset << '\n';
+        stream << data << mReset;
 
         Write(stream);
     }
 
     template<typename T>
-    void operator<<(const T& data) {
+    Logger& operator<<(const T& data) {
         Log(data);
+
+        return *this;
     }
 
 private:
