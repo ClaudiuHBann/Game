@@ -3,6 +3,8 @@
 #include "Engine/Core/Window.h"
 #include "Engine/Core/ManagerTexture.h"
 
+#include "Engine/Utility/Miscellaneous.h"
+
 #include "Generation/Dungeon.h"
 
 #define WINDOW_WIDTH_START (640)
@@ -11,8 +13,8 @@
 #define WINDOW_FLAGS (SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL)
 #define RENDERER_FLAGS (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)
 
-#define ZOOM_MIN 5
-#define ZOOM_MAX 145
+#define ZOOM_MIN 0.5f
+#define ZOOM_MAX 1.5f
 
 int main(int /*argc*/, char** /*argv*/) {
     Window window(
@@ -27,15 +29,14 @@ int main(int /*argc*/, char** /*argv*/) {
     bool isRunning = true;
     SDL_Event event {};
 
-	bool isMouseButtonDown = false;
-	SDL_Point mousePosOnButtonDown { 0, 0 };
-	SDL_Point mousePosDiff { 0, 0 };
+    bool isMouseButtonDown {};
+    SDL_Point mousePosOnButtonDown {};
+    SDL_Point mousePosDiff {};
 
-	SDL_Point offsetMap { 0, 0 };
+    SDL_FPoint offsetMap {};
 
-	SDL_Point windowSize { WINDOW_WIDTH_START, WINDOW_HEIGHT_START };
-
-	float zoomCurrent = 1.f;
+    float zoomCurrent = 1.f;
+    float zoomScale = 0.05f;
 
     while (isRunning) {
         while (SDL_PollEvent(&event)) {
@@ -43,50 +44,43 @@ int main(int /*argc*/, char** /*argv*/) {
                 case SDL_QUIT:
                     isRunning = false;
                     break;
-				case SDL_WINDOWEVENT:
-					switch (event.window.event) {
-						case SDL_WINDOWEVENT_RESIZED:
-							windowSize = { event.window.data1, event.window.data2 };
-							break;
-					}
 
-					break;
+                case SDL_MOUSEBUTTONDOWN:
+                    isMouseButtonDown = true;
+                    SDL_GetMouseState(&mousePosOnButtonDown.x, &mousePosOnButtonDown.y);
 
-				case SDL_MOUSEBUTTONDOWN:
-					isMouseButtonDown = true;
-					SDL_GetMouseState(&mousePosOnButtonDown.x, &mousePosOnButtonDown.y);
+                    break;
 
-					break;
+                case SDL_MOUSEMOTION:
+                    if (isMouseButtonDown) {
+                        SDL_Point mousePosCurrent {};
+                        SDL_GetMouseState(&mousePosCurrent.x, &mousePosCurrent.y);
 
-				case SDL_MOUSEMOTION:
-					if (isMouseButtonDown) {
-						SDL_Point mousePosCurrent { 0, 0 };
-						SDL_GetMouseState(&mousePosCurrent.x, &mousePosCurrent.y);
+                        mousePosDiff.x = -(mousePosOnButtonDown.x - mousePosCurrent.x);
+                        mousePosDiff.y = -(mousePosOnButtonDown.y - mousePosCurrent.y);
+                    }
 
-						mousePosDiff.x = -(mousePosOnButtonDown.x - mousePosCurrent.x);
-						mousePosDiff.y = -(mousePosOnButtonDown.y - mousePosCurrent.y);
-					}
+                    break;
 
-					break;
+                case SDL_MOUSEBUTTONUP:
+                    isMouseButtonDown = false;
 
-				case SDL_MOUSEBUTTONUP:
-					isMouseButtonDown = false;
+                    offsetMap.x += mousePosDiff.x;
+                    offsetMap.y += mousePosDiff.y;
 
-					offsetMap.x += mousePosDiff.x;
-					offsetMap.y += mousePosDiff.y;
-					mousePosOnButtonDown = { 0, 0 };
-					mousePosDiff = { 0, 0 };
+                    mousePosOnButtonDown = {};
+                    mousePosDiff = {};
 
-					break;
+                    break;
 
-				case SDL_MOUSEWHEEL:
-					if (event.wheel.y > 0 && (int)(zoomCurrent * 100.f) <= ZOOM_MAX) {
-						zoomCurrent += 0.05f;
-					} else if (event.wheel.y < 0 && (int)(zoomCurrent * 10.f) >= ZOOM_MIN) {
-						zoomCurrent -= 0.05f;
-					}
+                case SDL_MOUSEWHEEL:
+                    if (event.wheel.y > 0 && zoomCurrent <= ZOOM_MAX) {
+                        zoomCurrent += zoomScale;
+                    } else if (event.wheel.y < 0 && zoomCurrent >= ZOOM_MIN) {
+                        zoomCurrent -= zoomScale;
+                    }
 
-					break;
+                    break;
             }
         }
 
@@ -108,5 +102,5 @@ int main(int /*argc*/, char** /*argv*/) {
             - check every shit because OCD...
             - add namespaces to keep the popular naming everywhere
             - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
-			- center zoom on player
+            - center zoom on player
 */
