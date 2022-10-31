@@ -17,6 +17,18 @@
 #define ZOOM_MAX (1.5f)
 #define ZOOM_DIFF ((ZOOM_MAX) - (ZOOM_MIN))
 
+float x00 = 0.0f, y00 = 0.0f;
+//---------------------------------------------------------------------------
+void scr2obj(float& ox, float& oy, float sx, float sy, float zoom) {
+    ox = (sx - x00) / zoom;
+    oy = (sy - y00) / zoom;
+}
+//---------------------------------------------------------------------------
+void obj2scr(float& sx, float& sy, float ox, float oy, float zoom) {
+    sx = x00 + (ox * zoom);
+    sy = y00 + (oy * zoom);
+}
+
 int main(int /*argc*/, char** /*argv*/) {
     Window window(
         "Dangian",
@@ -63,7 +75,7 @@ int main(int /*argc*/, char** /*argv*/) {
                         mousePosDiff = { -(mousePosOnButtonDown.x - mousePosCurrent.x),
                                          -(mousePosOnButtonDown.y - mousePosCurrent.y) };
 
-                        float zoomCurrentInverted = 1.f / zoomCurrent;
+                        const float zoomCurrentInverted = 1.f / zoomCurrent;
                         offsetMapCurrent = { offsetMapLast.GetX() + mousePosDiff.x * zoomCurrentInverted,
                                              offsetMapLast.GetY() + mousePosDiff.y * zoomCurrentInverted };
                     }
@@ -79,11 +91,32 @@ int main(int /*argc*/, char** /*argv*/) {
                     break;
 
                 case SDL_MOUSEWHEEL:
-                    if (event.wheel.y > 0 && zoomCurrent <= ZOOM_MAX) {
-                        zoomCurrent += zoomScale;
-                    } else if (event.wheel.y < 0 && zoomCurrent >= ZOOM_MIN) {
-                        zoomCurrent -= zoomScale;
+                    {
+                        int x, y;
+                        SDL_GetMouseState(&x, &y);
+                        float mx = (float)x, my = (float)y;
+
+                        if (event.wheel.y > 0 && zoomCurrent <= ZOOM_MAX) {
+                            float mx0, my0;
+                            scr2obj(mx0, my0, mx, my, zoomCurrent);
+                            zoomCurrent += zoomScale;
+                            obj2scr(mx0, my0, mx0, my0, zoomCurrent);
+                            x00 += mx - mx0;
+                            y00 += my - my0;
+                        } else if (event.wheel.y < 0 && zoomCurrent >= ZOOM_MIN) {
+                            float mx0, my0;
+                            scr2obj(mx0, my0, mx, my, zoomCurrent);
+                            zoomCurrent -= zoomScale;
+                            obj2scr(mx0, my0, mx0, my0, zoomCurrent);
+                            x00 += mx - mx0;
+                            y00 += my - my0;
+                        }
+
+                        offsetMapCurrent = { offsetMapLast.GetX() + x00,
+                                                             offsetMapLast.GetY() + y00 };
                     }
+
+                    break;
             }
         }
 
@@ -109,5 +142,5 @@ int main(int /*argc*/, char** /*argv*/) {
             - check every shit because OCD...
             - add namespaces to keep the popular naming everywhere
             - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
-            - center zoom on mouse cursor
+            - center zoom on mouse cursor (https://www.youtube.com/watch?v=ZQ8qtAizis4)
 */
