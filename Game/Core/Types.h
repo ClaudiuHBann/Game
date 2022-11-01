@@ -33,9 +33,19 @@ public:
                  mY + point.mY };
     }
 
+    Point<T> operator+(const T scalar) const {
+        return { mX + scalar,
+                 mY + scalar };
+    }
+
     void operator+=(const Point<T>& point) {
         mX += point.mX;
         mY += point.mY;
+    }
+
+    void operator+=(const T scalar) {
+        mX += scalar;
+        mY += scalar;
     }
 
     Point<T> operator-(const Point<T>& point) const {
@@ -43,9 +53,19 @@ public:
                  mY - point.mY };
     }
 
+    Point<T> operator-(const T scalar) const {
+        return { mX - scalar,
+                 mY - scalar };
+    }
+
     void operator-=(const Point<T>& point) {
         mX -= point.mX;
         mY -= point.mY;
+    }
+
+    void operator-=(const T scalar) {
+        mX -= scalar;
+        mY -= scalar;
     }
 
     Point<T> operator*(const Point<T>& point) const {
@@ -53,9 +73,9 @@ public:
                  mY * point.mY };
     }
 
-    void operator*=(const Point<T>& point) {
-        mX *= point.mX;
-        mY *= point.mY;
+    Point<T> operator*(const T scalar) const {
+        return { mX * scalar,
+                 mY * scalar };
     }
 
     Point<T> operator/(const Point<T>& point) const {
@@ -63,9 +83,9 @@ public:
                  mY / point.mY };
     }
 
-    void operator/=(const Point<T>& point) {
-        mX /= point.mX;
-        mY /= point.mY;
+    Point<T> operator/(const T scalar) const {
+        return { mX / scalar,
+                 mY / scalar };
     }
 
     bool operator==(const Point<T>& point) const {

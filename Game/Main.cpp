@@ -17,16 +17,16 @@
 #define ZOOM_MAX (1.5f)
 #define ZOOM_DIFF ((ZOOM_MAX) - (ZOOM_MIN))
 
-float x00 = 0.0f, y00 = 0.0f;
-//---------------------------------------------------------------------------
-void scr2obj(float& ox, float& oy, float sx, float sy, float zoom) {
-    ox = (sx - x00) / zoom;
-    oy = (sy - y00) / zoom;
+Point<float> translation {};
+
+void ScreenToObject(Point<float>& mousePos, const float zoom) {
+    mousePos.SetX((mousePos.GetX() - translation.GetX()) / zoom);
+    mousePos.SetY((mousePos.GetY() - translation.GetY()) / zoom);
 }
-//---------------------------------------------------------------------------
-void obj2scr(float& sx, float& sy, float ox, float oy, float zoom) {
-    sx = x00 + (ox * zoom);
-    sy = y00 + (oy * zoom);
+
+void ObjectToScreen(Point<float>& mousePos, const float zoom) {
+    mousePos.SetX(translation.GetX() + (mousePos.GetX() * zoom));
+    mousePos.SetY(translation.GetY() + (mousePos.GetY() * zoom));
 }
 
 int main(int /*argc*/, char** /*argv*/) {
@@ -44,13 +44,14 @@ int main(int /*argc*/, char** /*argv*/) {
 
     bool isMouseButtonDown {};
     SDL_Point mousePosOnButtonDown {};
-    SDL_Point mousePosDiff {};
+    Point<float> mousePosDiff {};
 
     Point<float> offsetMapLast {};
     Point<float> offsetMapCurrent {};
 
     float zoomCurrent = ZOOM_DIFF;
     float zoomScale = 0.05f;
+    bool zoomed = false;
 
     while (isRunning) {
         while (SDL_PollEvent(&event)) {
@@ -61,6 +62,12 @@ int main(int /*argc*/, char** /*argv*/) {
 
                 case SDL_MOUSEBUTTONDOWN:
                     {
+                        if (zoomed) {
+                            offsetMapLast = offsetMapCurrent;
+
+                            zoomed = false;
+                        }
+
                         isMouseButtonDown = true;
                         SDL_GetMouseState(&mousePosOnButtonDown.x, &mousePosOnButtonDown.y);
                     }
@@ -72,12 +79,11 @@ int main(int /*argc*/, char** /*argv*/) {
                         SDL_Point mousePosCurrent {};
                         SDL_GetMouseState(&mousePosCurrent.x, &mousePosCurrent.y);
 
-                        mousePosDiff = { -(mousePosOnButtonDown.x - mousePosCurrent.x),
-                                         -(mousePosOnButtonDown.y - mousePosCurrent.y) };
+                        mousePosDiff = { -(float)(mousePosOnButtonDown.x - mousePosCurrent.x),
+                                         -(float)(mousePosOnButtonDown.y - mousePosCurrent.y) };
 
                         const float zoomCurrentInverted = 1.f / zoomCurrent;
-                        offsetMapCurrent = { offsetMapLast.GetX() + mousePosDiff.x * zoomCurrentInverted,
-                                             offsetMapLast.GetY() + mousePosDiff.y * zoomCurrentInverted };
+                        offsetMapCurrent = offsetMapLast + mousePosDiff * zoomCurrentInverted;
                     }
 
                     break;
@@ -92,28 +98,29 @@ int main(int /*argc*/, char** /*argv*/) {
 
                 case SDL_MOUSEWHEEL:
                     {
-                        int x, y;
-                        SDL_GetMouseState(&x, &y);
-                        float mx = (float)x, my = (float)y;
-
+                        int zoomType = 0;
                         if (event.wheel.y > 0 && zoomCurrent <= ZOOM_MAX) {
-                            float mx0, my0;
-                            scr2obj(mx0, my0, mx, my, zoomCurrent);
-                            zoomCurrent += zoomScale;
-                            obj2scr(mx0, my0, mx0, my0, zoomCurrent);
-                            x00 += mx - mx0;
-                            y00 += my - my0;
+                            zoomType = 1;
                         } else if (event.wheel.y < 0 && zoomCurrent >= ZOOM_MIN) {
-                            float mx0, my0;
-                            scr2obj(mx0, my0, mx, my, zoomCurrent);
-                            zoomCurrent -= zoomScale;
-                            obj2scr(mx0, my0, mx0, my0, zoomCurrent);
-                            x00 += mx - mx0;
-                            y00 += my - my0;
+                            zoomType = -1;
                         }
 
-                        offsetMapCurrent = { offsetMapLast.GetX() + x00,
-                                                             offsetMapLast.GetY() + y00 };
+                        if (zoomType) {
+                            zoomed = zoomType;
+
+                            SDL_Point mousePosCurrent {};
+                            SDL_GetMouseState(&mousePosCurrent.x, &mousePosCurrent.y);
+                            Point<float> mousePos { (float)mousePosCurrent.x, (float)mousePosCurrent.y };
+
+                            ScreenToObject(mousePos, zoomCurrent);
+                            zoomCurrent += zoomScale * zoomType;
+                            ObjectToScreen(mousePos, zoomCurrent);
+
+                            translation.SetX(translation.GetX() + ((float)mousePosCurrent.x - mousePos.GetX()));
+                            translation.SetY(translation.GetY() + ((float)mousePosCurrent.y - mousePos.GetY()));
+
+                            offsetMapCurrent = offsetMapLast + translation;
+                        }
                     }
 
                     break;
@@ -142,5 +149,6 @@ int main(int /*argc*/, char** /*argv*/) {
             - check every shit because OCD...
             - add namespaces to keep the popular naming everywhere
             - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
-            - center zoom on mouse cursor (https://www.youtube.com/watch?v=ZQ8qtAizis4)
+            - the zoom on mouse is scrappy coco
+            - zoom + move map = shit
 */
