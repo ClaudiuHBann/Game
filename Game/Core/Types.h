@@ -28,6 +28,46 @@ public:
         mY = y;
     }
 
+    Point<T> operator+(const Point<T>& point) const {
+        return { mX + point.mX,
+                 mY + point.mY };
+    }
+
+    void operator+=(const Point<T>& point) {
+        mX += point.mX;
+        mY += point.mY;
+    }
+
+    Point<T> operator-(const Point<T>& point) const {
+        return { mX - point.mX,
+                 mY - point.mY };
+    }
+
+    void operator-=(const Point<T>& point) {
+        mX -= point.mX;
+        mY -= point.mY;
+    }
+
+    Point<T> operator*(const Point<T>& point) const {
+        return { mX * point.mX,
+                 mY * point.mY };
+    }
+
+    void operator*=(const Point<T>& point) {
+        mX *= point.mX;
+        mY *= point.mY;
+    }
+
+    Point<T> operator/(const Point<T>& point) const {
+        return { mX / point.mX,
+                 mY / point.mY };
+    }
+
+    void operator/=(const Point<T>& point) {
+        mX /= point.mX;
+        mY /= point.mY;
+    }
+
     bool operator==(const Point<T>& point) const {
         return mX == point.mX && mY == point.mY;
     }
