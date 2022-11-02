@@ -30,7 +30,8 @@ public:
     Dungeon(
         const size_t iterations,
         const Point<float>& size,
-        const Point<float>& ratioToDiscard = { 0.45f, 0.45f }
+        const Point<float>& ratioToDiscard = { 0.45f, 0.45f },
+        const float tileSize = 5.f
     );
 
     void Render(

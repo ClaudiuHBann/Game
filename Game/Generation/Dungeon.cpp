@@ -63,7 +63,8 @@ const Rectangle<float>& Path::GetRectangle() const {
 Dungeon::Dungeon(
     const size_t iterations,
     const Point<float>& size,
-    const Point<float>& ratioToDiscard /* = { 0.45f, 0.45f } */
+    const Point<float>& ratioToDiscard /* = { 0.45f, 0.45f } */,
+    const float tileSize /* = 5.f */
 ) :
     mCanvas(0.f, 0.f, size.GetX(), size.GetY()),
     mRatioToDiscard(ratioToDiscard),
@@ -72,7 +73,17 @@ Dungeon::Dungeon(
     list<NodeTreeBinary<Rectangle<float>>> leafs;
     mTree->GetLeafs(leafs);
     for (const auto& leaf : leafs) {
-        mRooms.push_back(leaf.GetLeaf());
+        Rectangle<float> room(leaf.GetLeaf());
+
+        Point<float> roomTrimSide { fmod(room.GetW(), tileSize) / 2.f,
+                                    fmod(room.GetH(), tileSize) / 2.f };
+
+        room.SetX(room.GetX() + roomTrimSide.GetX());
+        room.SetY(room.GetY() + roomTrimSide.GetY());
+        room.SetW(room.GetW() - roomTrimSide.GetX());
+        room.SetH(room.GetH() - roomTrimSide.GetY());
+
+        mRooms.push_back(room);
     }
 
     GeneratePaths(mTree, mPaths);
