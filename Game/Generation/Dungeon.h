@@ -30,14 +30,13 @@ public:
     Dungeon(
         const size_t iterations,
         const Point<float>& size,
-        const Point<float>& ratioToDiscard = { 0.45f, 0.45f },
-        const float tileSize = 5.f
+        const float tileSize = 5.f,
+        const Point<float>& ratioToDiscard = { 0.45f, 0.45f }
     );
 
     void Render(
         SDL_Renderer* renderer,
         const Point<float>& scale = { 1.f, 1.f },
-        const float scalePath = 1.f,
         const Point<float>& offset = {}
     );
 
@@ -60,7 +59,6 @@ private:
 
     void RenderPaths(
         SDL_Renderer* renderer,
-        const float width = 1.f,
         const Point<float>& offset = {}
     );
 
@@ -80,6 +78,8 @@ private:
 
     NodeTreeBinary<Rectangle<float>>* SplitRectangle(const Rectangle<float>& container, const size_t iterations) const;
 
+    void GenerateRooms(const float tileSize);
+
     void GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths);
 
     void DeleteTree(NodeTreeBinary<Rectangle<float>>* tree);
@@ -92,4 +92,6 @@ private:
     NodeTreeBinary<Rectangle<float>>* mTree = nullptr;
     list<Room> mRooms {};
     list<Path> mPaths {};
+
+    float mTileSize {};
 };

@@ -15,7 +15,8 @@
 
 #define ZOOM_MIN (0.5f)
 #define ZOOM_MAX (1.5f)
-#define ZOOM_DIFF ((ZOOM_MAX) - (ZOOM_MIN))
+
+#define TILE_SIZE (5.f)
 
 Point<float> translation {};
 
@@ -37,7 +38,7 @@ int main(int /*argc*/, char** /*argv*/) {
         WINDOW_FLAGS, RENDERER_FLAGS
     );
 
-    Dungeon dungeon(4, { WINDOW_WIDTH_START, WINDOW_HEIGHT_START });
+    Dungeon dungeon(4, { WINDOW_WIDTH_START, WINDOW_HEIGHT_START }, TILE_SIZE);
 
     bool isRunning = true;
     SDL_Event event {};
@@ -49,7 +50,7 @@ int main(int /*argc*/, char** /*argv*/) {
     Point<float> offsetMapLast {};
     Point<float> offsetMapCurrent {};
 
-    float zoomCurrent = ZOOM_DIFF;
+    float zoomCurrent = 1.f;
     float zoomScale = 0.05f;
     bool zoomed = false;
 
@@ -133,7 +134,7 @@ int main(int /*argc*/, char** /*argv*/) {
 
         dungeon.Render(
             window.GetRenderer(),
-            { zoomCurrent, zoomCurrent }, 5.f,
+            { zoomCurrent, zoomCurrent },
             offsetMapCurrent
         );
 
