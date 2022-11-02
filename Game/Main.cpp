@@ -16,7 +16,7 @@
 #define ZOOM_MIN (0.5f)
 #define ZOOM_MAX (1.5f)
 
-#define TILE_SIZE (5.f)
+#define TILE_SIZE (10.f)
 
 Point<float> translation {};
 

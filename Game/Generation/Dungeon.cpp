@@ -221,13 +221,21 @@ void Dungeon::GenerateRooms(const float tileSize) {
     for (const auto& leaf : leafs) {
         Rectangle<float> room(leaf.GetLeaf());
 
-        Point<float> roomTrimSide { fmod(room.GetW(), tileSize) / 2.f,
-                                    fmod(room.GetH(), tileSize) / 2.f };
+        const auto trimLeft = fmod(room.GetX(), tileSize);
+        if (trimLeft) {
+            room.SetX(room.GetX() + (tileSize - trimLeft));
+        }
 
-        room.SetX(room.GetX() + roomTrimSide.GetX());
-        room.SetY(room.GetY() + roomTrimSide.GetY());
-        room.SetW(room.GetW() - roomTrimSide.GetX());
-        room.SetH(room.GetH() - roomTrimSide.GetY());
+        const auto trimRight = fmod(room.GetW(), tileSize);
+        room.SetW(room.GetW() - trimRight);
+
+        const auto trimTop = fmod(room.GetY(), tileSize);
+        if (trimTop) {
+            room.SetY(room.GetY() + (tileSize - trimTop));
+        }
+
+        const auto trimBottom = fmod(room.GetH(), tileSize);
+        room.SetH(room.GetH() - trimBottom);
 
         mRooms.push_back(room);
     }
