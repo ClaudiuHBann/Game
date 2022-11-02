@@ -65,6 +65,7 @@ int main(int /*argc*/, char** /*argv*/) {
                     {
                         if (zoomed) {
                             offsetMapLast = offsetMapCurrent;
+                            translation = {};
 
                             zoomed = false;
                         }
@@ -150,6 +151,5 @@ int main(int /*argc*/, char** /*argv*/) {
             - check every shit because OCD...
             - add namespaces to keep the popular naming everywhere
             - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
-            - the zoom on mouse is scrappy coco
             - zoom + move map = shit
 */
