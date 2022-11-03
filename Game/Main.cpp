@@ -40,6 +40,16 @@ int main(int /*argc*/, char** /*argv*/) {
 
     Dungeon dungeon(4, { WINDOW_WIDTH_START, WINDOW_HEIGHT_START }, TILE_SIZE);
 
+    vector<vector<Dungeon::Tile>> tileMatrix;
+    dungeon.GenerateTileMatrix(tileMatrix);
+
+    for (size_t i = 0; i < tileMatrix.size(); i++) {
+        for (size_t j = 0; j < tileMatrix[0].size(); j++) {
+            logger << (int)tileMatrix[i][j] << " ";
+        }
+        logger << "\n";
+    }
+
     bool isRunning = true;
     SDL_Event event {};
 

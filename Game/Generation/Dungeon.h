@@ -44,6 +44,8 @@ public:
         const Point<float>& ratioToDiscard = { 0.45f, 0.45f }
     );
 
+    void GenerateTileMatrix(vector<vector<Tile>>& tileMatrix);
+
     void Render(
         SDL_Renderer* renderer,
         const Point<float>& scale = { 1.f, 1.f },

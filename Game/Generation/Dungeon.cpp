@@ -85,6 +85,43 @@ Dungeon::Dungeon(
     GeneratePaths(mTree, mPaths);
 }
 
+void Dungeon::GenerateTileMatrix(vector<vector<Tile>>& tileMatrix) {
+    tileMatrix = vector<vector<Tile>>((size_t)(mCanvas.GetH() / mTileSize), vector<Tile>((size_t)(mCanvas.GetW() / mTileSize), Tile::NONE));
+
+    for (const auto& path : mPaths) {
+        if (path.GetRectangle().GetW() == mTileSize) {
+            const auto start = (size_t)(path.GetRectangle().GetY() / mTileSize);
+            const auto length = (size_t)(path.GetRectangle().GetH() / mTileSize);
+            const auto width = (size_t)(path.GetRectangle().GetX() / mTileSize);
+
+            for (size_t i = 0; i < length; i++) {
+                tileMatrix[start + i][width] = Tile::PATH;
+            }
+        } else {
+            const auto start = (size_t)(path.GetRectangle().GetX() / mTileSize);
+            const auto length = (size_t)(path.GetRectangle().GetW() / mTileSize);
+            const auto height = (size_t)(path.GetRectangle().GetY() / mTileSize);
+
+            for (size_t i = 0; i < length; i++) {
+                tileMatrix[height][start + i] = Tile::PATH;
+            }
+        }
+    }
+
+    for (const auto& room : mRooms) {
+        const auto offsetX = (size_t)(room.GetRectangle().GetX() / mTileSize);
+        const auto offsetY = (size_t)(room.GetRectangle().GetY() / mTileSize);
+        const auto width = (size_t)(room.GetRectangle().GetW() / mTileSize);
+        const auto height = (size_t)(room.GetRectangle().GetH() / mTileSize);
+
+        for (size_t i = 0; i < height; i++) {
+            for (size_t j = 0; j < width; j++) {
+                tileMatrix[offsetY + i][offsetX + j] = Tile::ROOM;
+            }
+        }
+    }
+}
+
 void Dungeon::Render(
     SDL_Renderer* renderer,
     const Point<float>& scale /* = { 1.f, 1.f } */,
