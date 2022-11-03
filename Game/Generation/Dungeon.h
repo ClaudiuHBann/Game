@@ -16,6 +16,10 @@ class Path {
 public:
     Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, const float width = 1.f);
 
+    void AddOffset(const Point<float>& offset);
+
+    void AddSize(const Point<float>& size);
+
     void SetWidth(const float width);
 
     const Rectangle<float>& GetRectangle() const;
@@ -27,6 +31,12 @@ private:
 
 class Dungeon {
 public:
+    enum class Tile : uint8_t {
+        NONE,
+        ROOM,
+        PATH
+    };
+
     Dungeon(
         const size_t iterations,
         const Point<float>& size,
@@ -78,7 +88,7 @@ private:
 
     NodeTreeBinary<Rectangle<float>>* SplitRectangle(const Rectangle<float>& container, const size_t iterations) const;
 
-    void GenerateRooms(const float tileSize);
+    void GenerateRooms();
 
     void GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<Path>& paths);
 

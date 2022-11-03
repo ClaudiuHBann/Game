@@ -152,4 +152,5 @@ int main(int /*argc*/, char** /*argv*/) {
             - add namespaces to keep the popular naming everywhere
             - The Engine needs more abstractization to stop using the sdl2 dependencies in the actual game
             - zoom + move map = shit
+            - add some comments because people tend to forget :)
 */

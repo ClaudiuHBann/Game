@@ -37,6 +37,16 @@ Path::Path(const Rectangle<float>& rectOne, const Rectangle<float>& rectTwo, con
     }
 }
 
+void Path::AddOffset(const Point<float>& offset) {
+    mRectangle.SetX(mRectangle.GetX() + offset.GetX());
+    mRectangle.SetY(mRectangle.GetY() + offset.GetY());
+}
+
+void Path::AddSize(const Point<float>& size) {
+    mRectangle.SetW(mRectangle.GetW() + size.GetX());
+    mRectangle.SetH(mRectangle.GetH() + size.GetY());
+}
+
 void Path::SetWidth(const float width) {
     if (mWidth == width) {
         return;
@@ -71,7 +81,7 @@ Dungeon::Dungeon(
     mRatioToDiscard(ratioToDiscard),
     mTree(SplitRectangle(mCanvas, iterations)) {
 
-    GenerateRooms(mTileSize);
+    GenerateRooms();
     GeneratePaths(mTree, mPaths);
 }
 
@@ -132,7 +142,6 @@ void Dungeon::RenderPaths(
     const Point<float>& offset /* = {} */
 ) {
     for (auto& path : mPaths) {
-        path.SetWidth(mTileSize);
         RenderPath(renderer, path, offset);
     }
 }
@@ -215,26 +224,26 @@ NodeTreeBinary<Rectangle<float>>* Dungeon::SplitRectangle(const Rectangle<float>
     return root;
 }
 
-void Dungeon::GenerateRooms(const float tileSize) {
+void Dungeon::GenerateRooms() {
     list<NodeTreeBinary<Rectangle<float>>> leafs;
     mTree->GetLeafs(leafs);
     for (const auto& leaf : leafs) {
         Rectangle<float> room(leaf.GetLeaf());
 
-        const auto trimLeft = fmod(room.GetX(), tileSize);
+        const auto trimLeft = fmod(room.GetX(), mTileSize);
         if (trimLeft) {
-            room.SetX(room.GetX() + (tileSize - trimLeft));
+            room.SetX(room.GetX() + (mTileSize - trimLeft));
         }
 
-        const auto trimRight = fmod(room.GetW(), tileSize);
+        const auto trimRight = fmod(room.GetW(), mTileSize);
         room.SetW(room.GetW() - trimRight);
 
-        const auto trimTop = fmod(room.GetY(), tileSize);
+        const auto trimTop = fmod(room.GetY(), mTileSize);
         if (trimTop) {
-            room.SetY(room.GetY() + (tileSize - trimTop));
+            room.SetY(room.GetY() + (mTileSize - trimTop));
         }
 
-        const auto trimBottom = fmod(room.GetH(), tileSize);
+        const auto trimBottom = fmod(room.GetH(), mTileSize);
         room.SetH(room.GetH() - trimBottom);
 
         mRooms.push_back(room);
@@ -246,7 +255,39 @@ void Dungeon::GeneratePaths(NodeTreeBinary<Rectangle<float>>* const tree, list<P
         return;
     }
 
-    paths.push_back(Path(tree->GetLeft()->GetLeaf(), tree->GetRight()->GetLeaf()));
+    Path path(tree->GetLeft()->GetLeaf(), tree->GetRight()->GetLeaf(), mTileSize);
+
+    const auto offsetX = fmod(path.GetRectangle().GetX(), mTileSize);
+    if (offsetX > 5.f) {
+        path.AddOffset({ mTileSize - offsetX, 0.f });
+    } else {
+        path.AddOffset({ -offsetX, 0.f });
+    }
+
+    const auto offsetY = fmod(path.GetRectangle().GetY(), mTileSize);
+    if (offsetY > 5.f) {
+        path.AddOffset({ 0.f, mTileSize - offsetY });
+    } else {
+        path.AddOffset({ 0.f, -offsetY });
+    }
+
+    if (path.GetRectangle().GetH() == mTileSize) {
+        const auto trimW = fmod(path.GetRectangle().GetW(), mTileSize);
+        if (trimW > 5.f) {
+            path.AddSize({ mTileSize - trimW, 0.f });
+        } else {
+            path.AddSize({ -trimW, 0.f });
+        }
+    } else {
+        const auto trimH = fmod(path.GetRectangle().GetH(), mTileSize);
+        if (trimH > 5.f) {
+            path.AddSize({ 0.f, mTileSize - trimH });
+        } else {
+            path.AddSize({ 0.f, -trimH });
+        }
+    }
+
+    paths.push_back(path);
 
     GeneratePaths(tree->GetLeft(), paths);
     GeneratePaths(tree->GetRight(), paths);
